@@ -1,0 +1,43 @@
+[project]
+name = "heatmap"
+version = "0.1.0"
+description = "Session app for the Personal Heat Map art project"
+requires-python = ">=3.15"
+dependencies = [
+    "django>=6.1,<6.2",
+    "pywebview>=6.2.1",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+heatmap = "heatmap.app:main"
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+module-name = "heatmap"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-django>=4.14.0",
+    "ruff>=0.17.1",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "heatmap.settings"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py315"
+line-length = 100
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+extend-select = ["I"]
+
+[tool.ruff.format]
+quote-style = "single"
