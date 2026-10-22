@@ -1,5 +1,5 @@
 [project]
-name = "heatmap"
+name = "personal-heat-map"
 version = "0.1.0"
 description = "Session app for the Personal Heat Map art project"
 requires-python = ">=3.15"
