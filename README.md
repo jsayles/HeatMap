@@ -12,6 +12,12 @@ psql -h localhost -d heatmap -c "create extension if not exists postgis;"
 uv run manage.py migrate
 ```
 
+Download the MediaPipe model files (into the git-ignored `body_map/ml_models/`):
+
+```bash
+uv run manage.py fetch_models
+```
+
 ## Run
 
 ```bash
@@ -32,6 +38,12 @@ uv run manage.py createsuperuser
 uv run pytest          # tests
 uv run ruff check .    # lint
 uv run ruff format .   # format
+```
+
+To compare the background-removal methods on a folder of photos (sheets go to `recordings/comparisons/`, never anywhere else):
+
+```bash
+uv run manage.py compare_segmentation path/to/photos
 ```
 
 Specs and task lists live in [docs/specs/](docs/specs/).

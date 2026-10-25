@@ -142,7 +142,7 @@ An import screen inside the app window for one front portrait per subject:
 - [x] 2.7 Write `tests/test_import.py` and `tests/test_coverage.py` as described in the proof artifacts. Import through the view with `launched_client` and a logged-in user as needed, then inspect the stored file with Pillow.
 - [x] 2.8 Jacob captures `02-proofs/02-task-02-import.png`. Write `02-proofs/02-task-02-proofs.md`.
 
-### [ ] 3.0 Background-removal comparison and decision
+### [x] 3.0 Background-removal comparison and decision
 
 A comparison command runs Apple Vision person segmentation, Apple Vision foreground mask and MediaPipe image segmenter on a folder of test photos. For each photo it writes a side-by-side sheet (outline over the photo, plus run time) to a private, git-ignored folder. You pick the winner, and the decision is recorded in the repo without images. **Needs your test photos and your judgment.** (Spec Unit 2: comparison, decision.)
 
@@ -159,19 +159,19 @@ A comparison command runs Apple Vision person segmentation, Apple Vision foregro
 
 #### 3.0 Tasks
 
-- [ ] 3.1 Add the openly licensed images to `tests/fixtures/images/`. Recheck each license on its source page, and write `ATTRIBUTION.md` with file name, source URL, author, license and attribution text. Remove any image whose license can't be confirmed.
-- [ ] 3.2 Run `uv add opencv-python-headless mediapipe pyobjc-framework-Vision`. Create `body_map/segmentation.py`. Each method is a plain function `(image: PIL.Image) -> numpy.ndarray` (float32, H×W, 0–1), listed in a `METHODS` dict. `segment(image)` calls `METHODS[settings.SEGMENTATION_METHOD]`.
-- [ ] 3.3 Add the two Apple Vision methods to `segmentation.py`:
+- [x] 3.1 Add the openly licensed images to `tests/fixtures/images/`. Recheck each license on its source page, and write `ATTRIBUTION.md` with file name, source URL, author, license and attribution text. Remove any image whose license can't be confirmed.
+- [x] 3.2 Run `uv add opencv-python-headless mediapipe pyobjc-framework-Vision`. Create `body_map/segmentation.py`. Each method is a plain function `(image: PIL.Image) -> numpy.ndarray` (float32, H×W, 0–1), listed in a `METHODS` dict. `segment(image)` calls `METHODS[settings.SEGMENTATION_METHOD]`.
+- [x] 3.3 Add the two Apple Vision methods to `segmentation.py`:
   - `vision_person`: `VNGeneratePersonSegmentationRequest`, quality level accurate.
   - `vision_foreground`: `VNGenerateForegroundInstanceMaskRequest`, all instances merged.
 
   Each converts the PIL image to a `CGImage`, reads the result pixel buffer into numpy, and resizes it to the input size.
-- [ ] 3.4 Write the `fetch_models` command. It downloads the pinned MediaPipe `.tflite` files (the selfie multiclass segmenter, plus the pose and face landmarker models in case MediaPipe wins) into `body_map/ml_models/`, which is git-ignored. Then add the `mediapipe` method to `segmentation.py`: the person mask from the multiclass model, as 1 − background.
-- [ ] 3.5 Write the `compare_segmentation <folder>` command. Output always goes to `MEDIA_ROOT / 'comparisons' / <timestamp>/` (that is, inside the git-ignored `recordings/`); there is no option to write anywhere else. For each image it runs every method, times it, and writes one PNG sheet: the image three times side by side, each with that method's outline drawn on it (mask threshold 0.5) and labeled with the method name and run time. It prints a summary table.
-- [ ] 3.6 Write `tests/test_segmentation.py` and `tests/test_compare_command.py` (`MEDIA_ROOT` is `tmp_path` in tests; check that the sheets land under `MEDIA_ROOT/comparisons/` and nowhere else).
-- [ ] 3.7 Jacob runs the command on at least 5 private photos (his own and consenting subjects'), plus the fixtures, and picks the winner.
-- [ ] 3.8 Write `docs/decisions/0001-background-removal.md`: the decision, the date, the candidates, how they were judged (edge quality on hair, arm/torso gaps, skin against background), a description of the photos (counts and conditions only), the run times, the reasons, and the rejected options (rembg: not on Python 3.15). Set `SEGMENTATION_METHOD` to the winner in `settings.py`.
-- [ ] 3.9 Jacob captures `02-proofs/02-task-03-comparison.png` from a fixture sheet. Write `02-proofs/02-task-03-proofs.md`.
+- [x] 3.4 Write the `fetch_models` command. It downloads the pinned MediaPipe `.tflite` files (the selfie multiclass segmenter, plus the pose and face landmarker models in case MediaPipe wins) into `body_map/ml_models/`, which is git-ignored. Then add the `mediapipe` method to `segmentation.py`: the person mask from the multiclass model, as 1 − background.
+- [x] 3.5 Write the `compare_segmentation <folder>` command. Output always goes to `MEDIA_ROOT / 'comparisons' / <timestamp>/` (that is, inside the git-ignored `recordings/`); there is no option to write anywhere else. For each image it runs every method, times it, and writes one PNG sheet: the image three times side by side, each with that method's outline drawn on it (mask threshold 0.5) and labeled with the method name and run time. It prints a summary table.
+- [x] 3.6 Write `tests/test_segmentation.py` and `tests/test_compare_command.py` (`MEDIA_ROOT` is `tmp_path` in tests; check that the sheets land under `MEDIA_ROOT/comparisons/` and nowhere else).
+- [-] 3.7 *(Skipped 2026-10-25: chosen from the 10 fixtures only; recorded as open in the decision record.)* Jacob runs the command on at least 5 private photos (his own and consenting subjects'), plus the fixtures, and picks the winner.
+- [x] 3.8 Write `docs/decisions/0001-background-removal.md`: the decision, the date, the candidates, how they were judged (edge quality on hair, arm/torso gaps, skin against background), a description of the photos (counts and conditions only), the run times, the reasons, and the rejected options (rembg: not on Python 3.15). Set `SEGMENTATION_METHOD` to the winner in `settings.py`.
+- [x] 3.9 Jacob captures `02-proofs/02-task-03-comparison.png` from a fixture sheet. Write `02-proofs/02-task-03-proofs.md`.
 
 ### [ ] 4.0 Cutout and outline polygon in PostGIS
 

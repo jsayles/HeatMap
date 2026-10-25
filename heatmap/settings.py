@@ -147,5 +147,9 @@ MEDIA_URL = 'media/'
 FILE_UPLOAD_TEMP_DIR = MEDIA_ROOT / 'tmp'
 FILE_UPLOAD_TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
+# Background-removal method used on import (see body_map/segmentation.py).
+# Chosen in docs/decisions/0001-background-removal.md; 'mediapipe' is the cross-platform fallback.
+SEGMENTATION_METHOD = 'vision_person'
+
 # Per-launch secret set by heatmap.app; requests without it are rejected.
 LAUNCH_TOKEN = os.environ.get('HEATMAP_LAUNCH_TOKEN', '')
