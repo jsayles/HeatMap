@@ -1,5 +1,7 @@
 # 01-spec-session-mvp.md
 
+> **Status (2026-10-25): closed after task 1.0 (app shell).** Superseded by a new direction: portrait first, then a cursor-and-zoom session over the photo (see the "Interface Option 2" note). The remaining units were not built. See the task file for details.
+
 ## Introduction/Overview
 
 Personal Heat Map is an art project. A participant wears a galvanic skin response (GSR) sensor while the facilitator talks them through their body, part by part. The readings become a heat map over a photo of the participant. This spec covers the first slice of the desktop session app: run a session against a **simulated** Philometer, record the raw GSR stream, watch it live, and tag stretches of the timeline with the body part being discussed.

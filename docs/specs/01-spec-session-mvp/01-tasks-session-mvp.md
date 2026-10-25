@@ -2,6 +2,8 @@
 
 Spec: [01-spec-session-mvp.md](01-spec-session-mvp.md)
 
+> **Status (2026-10-25): closed after task 1.0.** The project changed direction: the photo comes first, and the button-driven session gives way to a cursor-and-zoom interface over the portrait. Task 1.0 (the app shell) is built and carries forward. Tasks 2.0–5.0 are superseded and were not built; the parts that still apply will be planned again in later specs, starting with spec 02 (portrait mapping).
+
 ## Relevant Files
 
 | File | Why It Is Relevant |
@@ -76,7 +78,7 @@ Spec: [01-spec-session-mvp.md](01-spec-session-mvp.md)
 
 ## Tasks
 
-### [~] 1.0 Project scaffold and native app shell
+### [x] 1.0 Project scaffold and native app shell
 
 uv-managed Python 3.15 / Django 6.1 project that launches as a native pywebview window, runs its own ASGI server on `127.0.0.1` on a free port, rejects requests without the per-launch secret, and shuts everything down when the window closes. (Spec Unit 1: shell, server, access check.)
 
@@ -112,9 +114,9 @@ uv-managed Python 3.15 / Django 6.1 project that launches as a native pywebview 
 - [x] 1.7 Configure pytest and ruff in `pyproject.toml`: `DJANGO_SETTINGS_MODULE = "heatmap.settings"`, `testpaths = ["tests"]`, and ruff target `py315` with default rules plus import sorting. Write `tests/conftest.py` with a client fixture that has the launch cookie.
 - [x] 1.8 Write `tests/test_access.py` (403 without the cookie, 200 with it, 403 for a wrong token on `/launch/`) and `tests/test_server.py` (free port, host is `127.0.0.1`, and the port has stopped listening after `stop()`).
 - [x] 1.9 Write `README.md` covering what the app is (one line), `uv run heatmap`, `uv run manage.py createsuperuser` (the facilitator login for admin), `uv run pytest` and `uv run ruff check .`, and a note that `recordings/` and `db.sqlite3` hold private data and are never committed.
-- [~] 1.10 Run `uv run heatmap` by hand and capture `01-proofs/01-task-01-app-window.png`. Close the window, then record the `lsof` output in `01-proofs/01-task-01-proofs.md`. (Shutdown is verified; the screenshot file still needs adding.)
+- [x] 1.10 Run `uv run heatmap` by hand and capture `01-proofs/01-task-01-app-window.png`. Close the window, then record the `lsof` output in `01-proofs/01-task-01-proofs.md`.
 
-### [ ] 2.0 Participants, body parts and sessions
+### [-] 2.0 Participants, body parts and sessions (superseded)
 
 Django models and in-window editing (standard Django admin) for Participant (separate from `User`), a flat ordered BodyPart list seeded with the draft head-to-toe list, and Session linked to a Participant. Starting a session creates a timestamped folder in `recordings/`, whose files identify the participant only as `participant_<id>`. (Spec Unit 1: data model, seeding, data layout.)
 
@@ -148,7 +150,7 @@ Django models and in-window editing (standard Django admin) for Participant (sep
 - [ ] 2.6 Write `tests/test_models.py`, `tests/test_admin.py` (using `admin_client`) and `tests/test_session_folder.py`, with `RECORDINGS_DIR` set to `tmp_path`.
 - [ ] 2.7 Capture `01-proofs/2.0-body-parts.png` from the running app.
 
-### [ ] 3.0 Shared color library, simulator and recording worker
+### [-] 3.0 Shared color library, simulator and recording worker (superseded)
 
 A CircuitPython-compatible `heatcolor` package, a simulated Philometer behind a device-reader interface, and a background recorder that stamps samples on receipt and appends them to the session's raw file. The recorder runs independently of web requests. (Spec Unit 2: color library, simulator, worker, raw file.)
 
@@ -191,7 +193,7 @@ A CircuitPython-compatible `heatcolor` package, a simulated Philometer behind a 
 - [ ] 3.6 Write `tests/test_recorder.py` and `tests/test_crash_safety.py`. The crash test runs the subprocess with `sys.executable -m recording.recorder`, sends `os.kill(pid, signal.SIGKILL)`, then reads the CSV.
 - [ ] 3.7 Run `uv run python -m recording.recorder --out <scratch folder outside the repo>/samples.csv --rate 20 --seconds 5` and copy the header plus the first 50 rows to `01-proofs/3.0-sample-raw.csv`.
 
-### [ ] 4.0 Live session screen: phases, graph, range and virtual light
+### [-] 4.0 Live session screen: phases, graph, range and virtual light (superseded)
 
 A session screen started for a participant. It shows the Calibrating → Walkthrough → End phases, with ending confirmed and each change recorded with its timestamp. Samples stream over SSE into a scrolling uPlot graph, with the running min/max and a virtual light colored by `heatcolor`. The stream is its own endpoint, so a second window could subscribe later. (Spec Unit 2: phases, SSE, live graph, range, virtual light.)
 
@@ -237,7 +239,7 @@ A session screen started for a participant. It shows the Calibrating → Walkthr
 - [ ] 4.7 Write `tests/test_phases.py` and `tests/test_stream.py`. The stream tests consume the async iterator directly, using `pytest-django`'s async support or `asyncio.run`.
 - [ ] 4.8 Record `01-proofs/4.0-live-session.mov` with a test participant.
 
-### [ ] 5.0 Body-part tagging, session review and export
+### [-] 5.0 Body-part tagging, session review and export (superseded)
 
 Large, touch-friendly body-part buttons on the session screen, with click-to-toggle tagging:
 - At most one part is active at a time.
