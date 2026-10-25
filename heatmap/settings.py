@@ -139,16 +139,13 @@ MAILERS = {
 
 # Personal Heat Map
 
-# Private session files (raw samples, exports). Ignored by git.
-RECORDINGS_DIR = BASE_DIR / 'recordings'
+# Subjects' photos and everything made from them. recordings/ is ignored by git.
+MEDIA_ROOT = BASE_DIR / 'recordings'
+MEDIA_URL = 'media/'
+
+# Large uploads are spooled here instead of the system temp folder.
+FILE_UPLOAD_TEMP_DIR = MEDIA_ROOT / 'tmp'
+FILE_UPLOAD_TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
 # Per-launch secret set by heatmap.app; requests without it are rejected.
 LAUNCH_TOKEN = os.environ.get('HEATMAP_LAUNCH_TOKEN', '')
-
-# Tagged segments shorter than this are treated as accidental clicks.
-MIN_SEGMENT_SECONDS = 1.0
-
-# True: a low GSR reading (sweaty hands) shows as hot.
-HEATCOLOR_INVERT = True
-
-SIMULATOR_RATE_HZ = 20

@@ -1,0 +1,23 @@
+{% extends 'body_map/base.html' %}
+
+{% block title %}Import portrait · Personal Heat Map{% endblock %}
+
+{% block content %}
+<h1>Import portrait</h1>
+<p class="hint">One front photo per subject. Location data is removed from the photo when it's imported.</p>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <p>{{ form.subject.label_tag }} {{ form.subject }} {{ form.subject.errors }}</p>
+  <p>{{ form.photo.label_tag }} {{ form.photo }} {{ form.photo.errors }}</p>
+  <fieldset>
+    <legend>What the photo shows</legend>
+    {% for field in form.coverage_fields %}
+      <div class="coverage">
+        <span class="area">{{ field.label }}</span> {{ field }} {{ field.errors }}
+      </div>
+    {% endfor %}
+  </fieldset>
+  <button type="submit">Import</button>
+</form>
+{% endblock %}

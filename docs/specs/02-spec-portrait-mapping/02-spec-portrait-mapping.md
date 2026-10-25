@@ -20,7 +20,7 @@ The goal is a trustworthy, spatially queryable store of subject portraits. It is
 - **As the artist**, I want the body cut out cleanly from its background, so that the eventual heat map follows the true edge of the body, including hair and the gaps between arms and torso.
 - **As the artist**, I want to compare background-removal methods side by side on real photos, so that I choose the best boundary from evidence rather than a guess.
 - **As the artist**, I want every portrait aligned to the same grid at the same scale, so that later I can ask spatial questions across everyone, like "show me the torso".
-- **As the artist**, I want to record whether the chest/breasts, sex and buttocks are exposed, covered or not in the photo, so that the reciprocal catalog can later show people only what they've shared.
+- **As the artist**, I want to record whether the chest, sex and buttocks are exposed, covered or not in the photo, so that the reciprocal catalog can later show people only what they've shared.
 - **As the artist**, I want a portrait that can't be aligned to be kept and flagged rather than rejected, so that I never have to ask a subject for a new photo just because their head was turned.
 
 ## Demoable Units of Work
@@ -32,13 +32,16 @@ The goal is a trustworthy, spatially queryable store of subject portraits. It is
 **Functional Requirements:**
 
 - The system shall use PostgreSQL with PostGIS as its only Django database (GeoDjango), connecting to the local Postgres.app server. SQLite is no longer used.
-- The system shall store a **Subject** (display name, optional notes), separate from Django's `User`. Files on disk shall identify a subject only by ID (for example `subject_24`).
+- The system shall store a **Subject** (display name, optional notes), separate from Django's `User`, with optional intake details:
+  - **Gender**, asked as "Which best describes your gender?": Woman / Man / Non-binary / In my own words (free text) / Prefer not to say. There is no "Other" option.
+  - **Pronouns** (free text).
+  - **Year of birth.** It must make the subject at least 18 this year. Files on disk shall identify a subject only by ID (for example `subject_24`).
 - The system shall store a **Portrait** belonging to one subject, with a view type (only "front" in this MVP; the model allows other views later) and an import time.
 - The user shall be able to create and edit subjects (standard Django admin), and import a portrait for a subject from a screen inside the app window.
 - The system shall accept JPEG, PNG and HEIC photos (HEIC is the iPhone default).
 - On import, the system shall apply the photo's stored rotation, remove all **location** data (GPS) from the image metadata, and keep the other camera metadata (camera model, exposure, date).
 - The system shall save the stored copy under Django's media folder, set to the git-ignored `recordings/` folder, at a path that contains only IDs (for example `recordings/subject_24/portrait_7/original.jpg`). The uploaded original is not kept anywhere else in the app.
-- The system shall record **coverage** for each portrait as three exposure areas: chest/breasts, sex (stored internally as `genitals`) and buttocks. Each area is one of *exposed*, *covered* or *not in photo*.
+- The system shall record **coverage** for each portrait as three exposure areas: chest, sex (stored internally as `genitals`) and buttocks. Each area is one of *exposed*, *covered* or *not in photo*.
 - The system shall work out an overall level from the coverage:
   - **nude** if at least one area is exposed and none are covered.
   - **partly clothed** if at least one is exposed and at least one is covered.

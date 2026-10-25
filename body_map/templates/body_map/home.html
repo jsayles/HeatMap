@@ -1,0 +1,26 @@
+{% extends 'body_map/base.html' %}
+
+{% block content %}
+<h1>Subjects</h1>
+{% if subjects %}
+<table>
+  <thead><tr><th>Subject</th><th>Portrait</th></tr></thead>
+  <tbody>
+  {% for subject in subjects %}
+    <tr>
+      <td>{{ subject }}</td>
+      <td>
+        {% for portrait in subject.portraits.all %}
+          {{ portrait.get_view_display }}: {{ portrait.level }}
+        {% empty %}
+          <a href="{% url 'import_portrait' %}?subject={{ subject.pk }}">Import portrait</a>
+        {% endfor %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No subjects yet. <a href="{% url 'admin:body_map_subject_add' %}">Add a subject</a> to get started.</p>
+{% endif %}
+{% endblock %}

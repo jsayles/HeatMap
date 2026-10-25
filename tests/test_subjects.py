@@ -1,5 +1,8 @@
+import datetime
+
 import pytest
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from body_map.models import Subject
 
@@ -43,3 +46,60 @@ def test_admin_adds_and_edits_subject(admin_client):
     subject.refresh_from_db()
     assert subject.display_name == 'Renamed Subject'
     assert subject.notes == 'Some notes'
+
+
+def test_self_described_gender_needs_words():
+    subject = Subject(display_name='Test Subject', gender='self_described')
+    with pytest.raises(ValidationError) as error:
+        subject.full_clean()
+    assert 'gender_self_description' in error.value.message_dict
+
+    subject.gender_self_description = 'genderfluid'
+    subject.full_clean()
+
+
+def test_self_description_is_cleared_for_other_choices():
+    subject = Subject(
+        display_name='Test Subject', gender='woman', gender_self_description='left over'
+    )
+    subject.full_clean()
+    assert subject.gender_self_description == ''
+
+
+def test_gender_has_no_other_option():
+    labels = [label for _, label in Subject.GENDER_CHOICES]
+    assert 'Other' not in labels
+    assert 'In my own words' in labels
+
+
+@pytest.mark.parametrize('year', [1899, datetime.date.today().year - 17])
+def test_year_of_birth_out_of_range_is_refused(year):
+    subject = Subject(display_name='Test Subject', year_of_birth=year)
+    with pytest.raises(ValidationError) as error:
+        subject.full_clean()
+    assert 'year_of_birth' in error.value.message_dict
+
+
+def test_year_of_birth_for_an_adult_is_accepted():
+    Subject(display_name='Test Subject', year_of_birth=datetime.date.today().year - 18).full_clean()
+
+
+def test_admin_saves_intake_fields(admin_client):
+    response = admin_client.post(
+        '/admin/body_map/subject/add/',
+        {
+            'display_name': 'Intake Subject',
+            'gender': 'non_binary',
+            'gender_self_description': '',
+            'pronouns': 'they/them',
+            'year_of_birth': '1980',
+            'notes': '',
+        },
+    )
+    assert response.status_code == 302
+    subject = Subject.objects.get(display_name='Intake Subject')
+    assert (subject.gender, subject.pronouns, subject.year_of_birth) == (
+        'non_binary',
+        'they/them',
+        1980,
+    )

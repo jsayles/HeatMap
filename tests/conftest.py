@@ -9,7 +9,9 @@ TEST_TOKEN = 'test-launch-token'
 def _test_settings(settings, tmp_path):
     settings.LAUNCH_TOKEN = TEST_TOKEN
     # Never touch the real recordings/ folder from tests.
-    settings.RECORDINGS_DIR = tmp_path / 'recordings'
+    settings.MEDIA_ROOT = tmp_path / 'recordings'
+    settings.FILE_UPLOAD_TEMP_DIR = tmp_path / 'recordings' / 'tmp'
+    settings.FILE_UPLOAD_TEMP_DIR.mkdir(parents=True)
 
 
 @pytest.fixture

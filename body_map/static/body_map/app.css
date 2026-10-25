@@ -1,0 +1,92 @@
+:root {
+  --text: #222;
+  --muted: #666;
+  --line: #ddd;
+  --accent: #8a3b2c;
+  --bg: #fbfaf8;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+header {
+  display: flex;
+  gap: 2rem;
+  align-items: baseline;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--line);
+}
+
+header .brand {
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+nav a {
+  margin-right: 1rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+main {
+  padding: 1.5rem 2rem;
+  max-width: 60rem;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.4rem 1.5rem 0.4rem 0;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.hint,
+.message {
+  color: var(--muted);
+}
+
+fieldset {
+  border: 1px solid var(--line);
+  margin: 1rem 0;
+  padding: 0.5rem 1rem;
+}
+
+.coverage {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.coverage .area {
+  width: 6rem;
+}
+
+.coverage div,
+.coverage ul {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.errorlist {
+  color: #b00020;
+}
+
+button {
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+}

@@ -90,13 +90,13 @@ Switch Django to GeoDjango + PostGIS on the local Postgres.app, add the `Subject
 - [x] 1.7 Update the `README.md` wording: "participant" → "subject", SQLite → PostGIS, and the one-time database setup (1.1). Keep the private-data section, noting the Postgres data folder lives outside the repo.
 - [x] 1.8 Write `02-proofs/02-task-01-proofs.md` with the `psql`, `showmigrations` and `pytest` output.
 
-### [ ] 2.0 Portrait import with location removal and coverage
+### [x] 2.0 Portrait import with location removal and coverage
 
 An import screen inside the app window for one front portrait per subject:
 - Accepts JPEG, PNG and HEIC.
 - Applies the photo's rotation and removes location data, keeping camera details.
 - Saves the photo under `recordings/subject_<id>/portrait_<id>/` through Django's media handling.
-- Records coverage (chest/breasts, sex, buttocks: exposed / covered / not in photo), with the overall level worked out from it.
+- Records coverage (chest, sex, buttocks: exposed / covered / not in photo), with the overall level worked out from it.
 
 (Spec Unit 1: import, coverage.)
 
@@ -116,20 +116,20 @@ An import screen inside the app window for one front portrait per subject:
 
 #### 2.0 Tasks
 
-- [ ] 2.1 **Early check:** add a temporary `<input type="file">` page and confirm by hand that pywebview opens the macOS file picker. If it doesn't, enable it, for example via pywebview's file-dialog support or a `js_api` bridge, before building on it. Record the result in the proofs.
-- [ ] 2.2 Run `uv add pillow pillow-heif` (both confirmed on Python 3.15). In `settings.py`:
+- [x] 2.1 **Early check:** add a temporary `<input type="file">` page and confirm by hand that pywebview opens the macOS file picker. If it doesn't, enable it, for example via pywebview's file-dialog support or a `js_api` bridge, before building on it. Record the result in the proofs.
+- [x] 2.2 Run `uv add pillow pillow-heif` (both confirmed on Python 3.15). In `settings.py`:
   - Set `MEDIA_ROOT = BASE_DIR / 'recordings'`, `MEDIA_URL = 'media/'`.
   - Set `FILE_UPLOAD_TEMP_DIR = BASE_DIR / 'recordings' / 'tmp'` (created on start), so uploads never touch the system temp folder.
 
   Serve media in `urls.py` with `static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)`. It sits behind the launch-secret middleware like every other URL.
-- [ ] 2.3 In `body_map/models.py`, add `Portrait` with:
+- [x] 2.3 Add the **Subject intake** fields: `gender` (choices `woman`, `man`, `non_binary`, `self_described` shown as "In my own words", `prefer_not_to_say`; blank allowed; no "Other"), `gender_self_description` (required only when self-described), `pronouns` and `year_of_birth`. `year_of_birth` is validated as 1900 to this year minus 18. Show them in the Subject admin and test them in `tests/test_subjects.py`. Then, in `body_map/models.py`, add `Portrait` with:
   - `subject` FK, `view` (choices: `front`), `imported_at`.
   - `original` ImageField, using an `upload_to` function in `models.py` that returns `subject_<sid>/portrait_<pid>/original.<ext>`. The portrait row is saved first so the ID exists.
   - Three coverage fields `chest`, `genitals`, `buttocks`, each with choices `exposed` / `covered` / `not_in_photo` and no default.
   - A unique constraint on `(subject, view)`.
 
   Add a `level` property implementing the rules: nude if at least one area is exposed and none are covered; partly clothed if at least one is exposed and at least one is covered; clothed if none are exposed. Label `genitals` as "Sex" (`verbose_name='sex'`).
-- [ ] 2.4 Write `body_map/imaging.py` with `clean_image(uploaded_file) -> (bytes, ext)`:
+- [x] 2.4 Write `body_map/imaging.py` with `clean_image(uploaded_file) -> (bytes, ext)`:
   1. Register the HEIF opener and open the image.
   2. Apply the rotation with `ImageOps.exif_transpose`.
   3. Copy the EXIF, delete the GPS block (tag `0x8825`), and set the orientation to 1.
@@ -137,10 +137,10 @@ An import screen inside the app window for one front portrait per subject:
   5. Save JPEG and HEIC inputs as JPEG (quality 95) and PNG as PNG, with the cleaned EXIF.
 
   Reject anything else with a clear message.
-- [ ] 2.5 Write `tests/images.py` helpers that build a small JPEG with an EXIF camera model, a GPS block, an XMP packet containing location and a rotation flag of 6. Also build a PNG, and a HEIC through pillow-heif.
-- [ ] 2.6 Write `body_map/forms.py` (`ImportForm`: subject, file, the three coverage areas as required radio choices with the labels "Chest / breasts", "Sex", "Buttocks") and the `import_portrait_view` (GET form; POST runs import and redirects). At this stage, import only cleans and stores the original; 4.0 extends it into the full pipeline. Add `import.html`, `base.html` and `home.html` (subjects with their portrait status, plus an "Import portrait" link) in `body_map`, and point `/` at the new home view, replacing `heatmap/views.py`.
-- [ ] 2.7 Write `tests/test_import.py` and `tests/test_coverage.py` as described in the proof artifacts. Import through the view with `launched_client` and a logged-in user as needed, then inspect the stored file with Pillow.
-- [ ] 2.8 Jacob captures `02-proofs/02-task-02-import.png`. Write `02-proofs/02-task-02-proofs.md`.
+- [x] 2.5 Write `tests/images.py` helpers that build a small JPEG with an EXIF camera model, a GPS block, an XMP packet containing location and a rotation flag of 6. Also build a PNG, and a HEIC through pillow-heif.
+- [x] 2.6 Write `body_map/forms.py` (`ImportForm`: subject, file, the three coverage areas as required radio choices with the labels "Chest", "Sex", "Buttocks") and the `import_portrait_view` (GET form; POST runs import and redirects). At this stage, import only cleans and stores the original; 4.0 extends it into the full pipeline. Add `import.html`, `base.html` and `home.html` (subjects with their portrait status, plus an "Import portrait" link) in `body_map`, and point `/` at the new home view, replacing `heatmap/views.py`.
+- [x] 2.7 Write `tests/test_import.py` and `tests/test_coverage.py` as described in the proof artifacts. Import through the view with `launched_client` and a logged-in user as needed, then inspect the stored file with Pillow.
+- [x] 2.8 Jacob captures `02-proofs/02-task-02-import.png`. Write `02-proofs/02-task-02-proofs.md`.
 
 ### [ ] 3.0 Background-removal comparison and decision
 
@@ -289,7 +289,7 @@ A portrait view shows the photo with its outline and key points, the aligned cut
 - [ ] 6.2 Write the `portrait_detail` view and template:
   - **Left:** the original with an SVG overlay (outline and key points, with names on hover).
   - **Right:** `aligned.png` with an SVG overlay showing the grid border, a cross at `GRID_NOSE_BRIDGE`, and two ticks marking `GRID_SHOULDER_WIDTH`.
-  - **Underneath:** coverage ("Chest / breasts", "Sex", "Buttocks"), the overall level, the segmentation method, and the alignment status or reason.
+  - **Underneath:** coverage ("Chest", "Sex", "Buttocks"), the overall level, the segmentation method, and the alignment status or reason.
 - [ ] 6.3 Write the `overlay` view and template: one SVG at grid size, with every aligned portrait's `outline_grid` as a thin, semi-transparent path, a count, and the nose-bridge cross. No `<img>`.
 - [ ] 6.4 Link the portrait and overlay views from the home screen; the import redirects to the new portrait's view. Add `app.css` (calm, plain, panels side by side).
 - [ ] 6.5 Write `tests/test_views.py`.

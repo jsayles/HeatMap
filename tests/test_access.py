@@ -3,6 +3,9 @@ import pytest
 from heatmap.launch import COOKIE_NAME
 from tests.conftest import TEST_TOKEN
 
+# The home screen reads the database.
+pytestmark = pytest.mark.django_db
+
 
 def test_request_without_launch_secret_is_rejected(client):
     assert client.get('/').status_code == 403
