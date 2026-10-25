@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
+    'body_map',
 ]
 
 MIDDLEWARE = [
@@ -76,10 +78,16 @@ WSGI_APPLICATION = 'heatmap.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'heatmap',
+        'HOST': 'localhost',
     }
 }
+
+# GeoDjango uses the GDAL and GEOS libraries bundled with Postgres.app.
+POSTGRES_APP_LIB = Path('/Applications/Postgres.app/Contents/Versions/latest/lib')
+GDAL_LIBRARY_PATH = str(POSTGRES_APP_LIB / 'libgdal.dylib')
+GEOS_LIBRARY_PATH = str(POSTGRES_APP_LIB / 'libgeos_c.dylib')
 
 
 # Password validation
