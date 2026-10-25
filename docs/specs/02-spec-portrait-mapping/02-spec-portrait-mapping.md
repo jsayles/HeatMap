@@ -164,7 +164,7 @@ All choices below are the **current direction** and open to change.
   - Postgres.app includes the GDAL and GEOS libraries. Point Django's `GDAL_LIBRARY_PATH` and `GEOS_LIBRARY_PATH` at them rather than installing GDAL separately (the Django docs suggest a separate install, but the bundled libraries are present).
   - Postgres.app may show a one-time permission dialog the first time the app connects.
 - **Coordinates:**
-  - Use plain, non-geographic coordinates (SRID 0): units are pixels for original-photo geometry and grid units for aligned geometry. Keep them in separate fields per portrait, so the two are never mixed in a query.
+  - Use plain, non-geographic coordinates, labeled with `IMAGE_SRID = 3857` and never transformed (GeoDjango cannot store SRID 0; see `body_map/models.py`): units are pixels for original-photo geometry and grid units for aligned geometry. Keep them in separate fields per portrait, so the two are never mixed in a query.
   - The y axis runs downward, matching images.
 - **Standard grid (default, adjustable):**
   - A 1000 × 2000 unit canvas.

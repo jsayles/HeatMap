@@ -1,7 +1,7 @@
 import datetime
 
+from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
-from django.db import models
 
 
 class Subject(models.Model):
@@ -55,6 +55,12 @@ class Subject(models.Model):
         return f'subject_{self.pk}'
 
 
+# Geometry here is in image pixels or standard-grid units, not map coordinates. GeoDjango
+# can't store SRID 0 (GEOS reads it as "none" and asks PostGIS to transform), so geometry
+# is labeled with a planar SRID it is never transformed out of.
+IMAGE_SRID = 3857
+
+
 def portrait_path(portrait, filename):
     return f'{portrait.subject.file_id}/portrait_{portrait.pk}/{filename}'
 
@@ -72,6 +78,12 @@ class Portrait(models.Model):
     view = models.CharField(max_length=20, choices=VIEW_CHOICES, default='front')
     imported_at = models.DateTimeField(auto_now_add=True)
     original = models.ImageField(upload_to=portrait_path, blank=True)
+    cutout = models.ImageField(upload_to=portrait_path, blank=True)
+    mask = models.ImageField(upload_to=portrait_path, blank=True)
+
+    # Body outline in original-photo pixels (y axis down).
+    outline_px = models.PolygonField(srid=IMAGE_SRID, null=True, blank=True)
+    segmentation_method = models.CharField(max_length=40, blank=True)
 
     # What the photo shows. "genitals" is labeled "Sex" in the app.
     chest = models.CharField(max_length=20, choices=COVERAGE_CHOICES)

@@ -44,7 +44,7 @@ Spec: [02-spec-portrait-mapping.md](02-spec-portrait-mapping.md)
 ### Notes
 
 - **Commands:** `uv run pytest [path]`, `uv run ruff check .`, `uv run ruff format .`. Commit on `main` with conventional messages ending in `Related to T<n>.0 in Spec 02`.
-- **Keep Django standard:** use `startapp`, the admin, `ImageField`/`FileField` with `MEDIA_ROOT`, and GeoDjango model fields (`PolygonField`, `PointField`) with `srid=0`. The y axis runs downward.
+- **Keep Django standard:** use `startapp`, the admin, `ImageField`/`FileField` with `MEDIA_ROOT`, and GeoDjango model fields (`PolygonField`, `PointField`) with `srid=IMAGE_SRID`. The y axis runs downward.
 - **Two coordinate systems, kept apart:** fields ending `_px` are original-photo pixels; fields ending `_grid` are standard-grid units. Never mix them in one query.
 - **One app:** everything for this spec lives in the single `body_map` app (`Subject`, `Portrait`, `Keypoint`, import, views). Keep modules flat; no sub-packages or registries.
 - **Deterministic tests:** pipeline and view tests swap the real segmentation and landmark functions for simple fakes with pytest's `monkeypatch`. Tests that run the real Apple Vision or MediaPipe models use the fixtures in `tests/fixtures/images/`, and skip if they're absent.
@@ -173,7 +173,7 @@ A comparison command runs Apple Vision person segmentation, Apple Vision foregro
 - [x] 3.8 Write `docs/decisions/0001-background-removal.md`: the decision, the date, the candidates, how they were judged (edge quality on hair, arm/torso gaps, skin against background), a description of the photos (counts and conditions only), the run times, the reasons, and the rejected options (rembg: not on Python 3.15). Set `SEGMENTATION_METHOD` to the winner in `settings.py`.
 - [x] 3.9 Jacob captures `02-proofs/02-task-03-comparison.png` from a fixture sheet. Write `02-proofs/02-task-03-proofs.md`.
 
-### [ ] 4.0 Cutout and outline polygon in PostGIS
+### [x] 4.0 Cutout and outline polygon in PostGIS
 
 Import runs the chosen method behind a single setting, then saves the cutout and mask. It traces the largest body region into a smoothed, valid polygon stored in PostGIS in original-photo coordinates. A photo with no usable outline is rejected with a reason and leaves nothing behind. (Spec Unit 2: pipeline, outline, rejection.)
 
@@ -194,28 +194,28 @@ Import runs the chosen method behind a single setting, then saves the cutout and
 
 #### 4.0 Tasks
 
-- [ ] 4.1 Add these fields to `Portrait`, with a migration:
+- [x] 4.1 Add these fields to `Portrait`, with a migration:
   - The `cutout` and `mask` file fields (`cutout.png`, `mask.png`).
-  - `outline_px = PolygonField(srid=0, null=True)`.
+  - `outline_px = PolygonField(srid=IMAGE_SRID, null=True)`.
   - `segmentation_method` CharField.
-- [ ] 4.2 Write `body_map/outline.py`: `trace_outline(mask) -> Polygon`.
+- [x] 4.2 Write `body_map/outline.py`: `trace_outline(mask) -> Polygon`.
   - Threshold at 0.5.
   - `cv2.findContours` with external contours only, keeping the largest by area.
   - Reject the outline if its area is under `MIN_BODY_AREA_FRACTION` of the image (default 0.02).
   - `cv2.approxPolyDP` with epsilon 1.0 px, so it smooths without cutting in.
-  - Build a GEOS `Polygon(srid=0)`, then `make_valid` if needed, keeping the largest polygon.
+  - Build a GEOS `Polygon(srid=IMAGE_SRID)`, then `make_valid` if needed, keeping the largest polygon.
 
   Raise `NoUsableOutline(reason)` on failure.
-- [ ] 4.3 Write `body_map/pipeline.py`: `import_portrait(subject, uploaded_file, coverage) -> Portrait`.
+- [x] 4.3 Write `body_map/pipeline.py`: `import_portrait(subject, uploaded_file, coverage) -> Portrait`.
   1. Clean the image (2.4).
   2. Segment with `segmentation.segment()`.
   3. Save the mask, plus the cutout (original + mask as alpha).
   4. Trace the outline.
 
   Run it inside `transaction.atomic()`. On any exception, delete the portrait's folder and re-raise, so nothing is left behind. Point the import view at it, and show `NoUsableOutline` reasons on the form.
-- [ ] 4.4 Add a `fake_segment` fixture in `tests/conftest.py` that monkeypatches `segmentation.segment` to return a mask derived from the synthetic image's colors. Write `tests/test_outline.py` and `tests/test_import_pipeline.py`.
-- [ ] 4.5 Add an "Importing…" state to `import.html`: disable the button and show a message on submit, since segmentation takes several seconds.
-- [ ] 4.6 Import one openly licensed fixture through the app with the real winning method. Capture the `psql` output and write `02-proofs/02-task-04-proofs.md`.
+- [x] 4.4 Add a `fake_segment` fixture in `tests/conftest.py` that monkeypatches `segmentation.segment` to return a mask derived from the synthetic image's colors. Write `tests/test_outline.py` and `tests/test_import_pipeline.py`.
+- [x] 4.5 Add an "Importing…" state to `import.html`: disable the button and show a message on submit, since segmentation takes several seconds.
+- [x] 4.6 Import one openly licensed fixture through the app with the real winning method. Capture the `psql` output and write `02-proofs/02-task-04-proofs.md`.
 
 ### [ ] 5.0 Landmarks and alignment to the standard grid
 
@@ -242,12 +242,12 @@ Detect the nose bridge, eyes, shoulders and the other available body points, and
 #### 5.0 Tasks
 
 - [ ] 5.1 Add these fields to `Portrait`:
-  - `outline_grid = PolygonField(srid=0, null=True)`.
+  - `outline_grid = PolygonField(srid=IMAGE_SRID, null=True)`.
   - The `aligned` file field (`aligned.png`).
   - `align_scale`, `align_rotation_deg`, `align_tx`, `align_ty` (null floats).
   - `alignment_status` (choices `aligned` / `not_aligned`) and `alignment_reason` (blank).
 
-  Add `Keypoint(portrait FK, name, point_px PointField(srid=0), point_grid PointField(srid=0, null=True))` with `unique (portrait, name)`.
+  Add `Keypoint(portrait FK, name, point_px PointField(srid=IMAGE_SRID), point_grid PointField(srid=IMAGE_SRID, null=True))` with `unique (portrait, name)`.
 - [ ] 5.2 Add the grid settings `GRID_SIZE = (1000, 2000)`, `GRID_NOSE_BRIDGE = (500, 200)`, and `GRID_SHOULDER_WIDTH = 250`.
 - [ ] 5.3 Write `body_map/alignment.py`:
   - `compute_alignment(nose, shoulder_a, shoulder_b) -> Alignment(scale, rotation_deg, tx, ty)`. Order the shoulders by image x, so naming doesn't matter. The rotation makes the shoulder vector horizontal, the scale is `GRID_SHOULDER_WIDTH / distance`, and the translation puts the nose at `GRID_NOSE_BRIDGE`.
@@ -281,7 +281,7 @@ A portrait view shows the photo with its outline and key points, the aligned cut
   - The overlay page contains one SVG outline per aligned portrait and no `<img>` element.
 
   Demonstrates the view requirements.
-- CLI: `psql -d heatmap -c "select id from body_map_portrait where ST_Contains(outline_grid, ST_Point(500, 300, 0));"` returns the aligned fixture portraits. (500, 300) is 100 units below the nose bridge, so it should lie inside every aligned body. Demonstrates spatial questions across subjects.
+- CLI: `psql -d heatmap -c "select id from body_map_portrait where ST_Contains(outline_grid, ST_Point(500, 300, 3857));"` returns the aligned fixture portraits. (500, 300) is 100 units below the nose bridge, so it should lie inside every aligned body. Demonstrates spatial questions across subjects.
 
 #### 6.0 Tasks
 

@@ -7,7 +7,7 @@ from PIL import ExifTags, Image
 from body_map.models import Portrait, Subject
 from tests.images import GPS_LATITUDE_TEXT, RED, make_heic, make_jpeg, make_png
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures('fake_segment')]
 
 ALL_COVERED = {'chest': 'covered', 'genitals': 'covered', 'buttocks': 'covered'}
 

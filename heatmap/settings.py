@@ -151,5 +151,8 @@ FILE_UPLOAD_TEMP_DIR.mkdir(parents=True, exist_ok=True)
 # Chosen in docs/decisions/0001-background-removal.md; 'mediapipe' is the cross-platform fallback.
 SEGMENTATION_METHOD = 'vision_person'
 
+# A body outline smaller than this share of the photo means no usable person was found.
+MIN_BODY_AREA_FRACTION = 0.02
+
 # Per-launch secret set by heatmap.app; requests without it are rejected.
 LAUNCH_TOKEN = os.environ.get('HEATMAP_LAUNCH_TOKEN', '')

@@ -6,7 +6,7 @@ from body_map.forms import ImportForm
 from body_map.models import Portrait, Subject
 from tests.images import make_jpeg
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures('fake_segment')]
 
 
 @pytest.mark.parametrize(

@@ -24,3 +24,18 @@ def launched_client(client):
 def admin_client(admin_client):
     admin_client.cookies[COOKIE_NAME] = TEST_TOKEN
     return admin_client
+
+
+@pytest.fixture
+def fake_segment(monkeypatch):
+    """Replace background removal with a predictable fake: red pixels are the person."""
+    import numpy as np
+
+    from body_map import segmentation
+
+    def segment(image):
+        pixels = np.asarray(image.convert('RGB')).astype(int)
+        red = (pixels[..., 0] > 128) & (pixels[..., 2] < 128)
+        return red.astype(np.float32)
+
+    monkeypatch.setattr(segmentation, 'segment', segment)

@@ -5,7 +5,7 @@
 {% block content %}
 <h1>Import portrait</h1>
 <p class="hint">One front photo per subject. Location data is removed from the photo when it's imported.</p>
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" id="import-form">
   {% csrf_token %}
   {{ form.non_field_errors }}
   <p>{{ form.subject.label_tag }} {{ form.subject }} {{ form.subject.errors }}</p>
@@ -19,5 +19,13 @@
     {% endfor %}
   </fieldset>
   <button type="submit">Import</button>
+  <span class="hint" id="importing" hidden>Importing… removing the background and tracing the outline.</span>
 </form>
+<script>
+  // Background removal takes a few seconds; show that something is happening.
+  document.getElementById('import-form').addEventListener('submit', (event) => {
+    event.target.querySelector('button').disabled = true;
+    document.getElementById('importing').hidden = false;
+  });
+</script>
 {% endblock %}
