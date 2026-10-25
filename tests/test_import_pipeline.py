@@ -10,7 +10,7 @@ from body_map.outline import NoUsableOutline
 from body_map.pipeline import import_portrait
 from tests.images import make_jpeg
 
-pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures('fake_segment')]
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures('fake_segment', 'fake_landmarks')]
 
 COVERAGE = {'chest': 'covered', 'genitals': 'covered', 'buttocks': 'not_in_photo'}
 

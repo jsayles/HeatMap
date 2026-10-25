@@ -154,5 +154,11 @@ SEGMENTATION_METHOD = 'vision_person'
 # A body outline smaller than this share of the photo means no usable person was found.
 MIN_BODY_AREA_FRACTION = 0.02
 
+# The standard grid every aligned portrait is mapped onto (grid units, y down).
+# The nose bridge lands on GRID_NOSE_BRIDGE; shoulder width sets the scale.
+GRID_SIZE = (1000, 2000)
+GRID_NOSE_BRIDGE = (500, 200)
+GRID_SHOULDER_WIDTH = 250
+
 # Per-launch secret set by heatmap.app; requests without it are rejected.
 LAUNCH_TOKEN = os.environ.get('HEATMAP_LAUNCH_TOKEN', '')

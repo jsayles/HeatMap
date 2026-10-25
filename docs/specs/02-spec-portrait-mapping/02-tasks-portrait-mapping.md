@@ -217,7 +217,7 @@ Import runs the chosen method behind a single setting, then saves the cutout and
 - [x] 4.5 Add an "Importing…" state to `import.html`: disable the button and show a message on submit, since segmentation takes several seconds.
 - [x] 4.6 Import one openly licensed fixture through the app with the real winning method. Capture the `psql` output and write `02-proofs/02-task-04-proofs.md`.
 
-### [ ] 5.0 Landmarks and alignment to the standard grid
+### [x] 5.0 Landmarks and alignment to the standard grid
 
 Detect the nose bridge, eyes, shoulders and the other available body points, and store them as named PostGIS points in both coordinate systems. Compute and store the alignment (shift, scale, rotation) from the nose bridge and shoulders, then store the grid outline and the aligned image. Mark a portrait "not aligned", with the reason, when key points are missing. (Spec Unit 3: landmarks, alignment, keep-and-flag.)
 
@@ -241,31 +241,30 @@ Detect the nose bridge, eyes, shoulders and the other available body points, and
 
 #### 5.0 Tasks
 
-- [ ] 5.1 Add these fields to `Portrait`:
+- [x] 5.1 Add these fields to `Portrait`:
   - `outline_grid = PolygonField(srid=IMAGE_SRID, null=True)`.
   - The `aligned` file field (`aligned.png`).
   - `align_scale`, `align_rotation_deg`, `align_tx`, `align_ty` (null floats).
   - `alignment_status` (choices `aligned` / `not_aligned`) and `alignment_reason` (blank).
 
   Add `Keypoint(portrait FK, name, point_px PointField(srid=IMAGE_SRID), point_grid PointField(srid=IMAGE_SRID, null=True))` with `unique (portrait, name)`.
-- [ ] 5.2 Add the grid settings `GRID_SIZE = (1000, 2000)`, `GRID_NOSE_BRIDGE = (500, 200)`, and `GRID_SHOULDER_WIDTH = 250`.
-- [ ] 5.3 Write `body_map/alignment.py`:
+- [x] 5.2 Add the grid settings `GRID_SIZE = (1000, 2000)`, `GRID_NOSE_BRIDGE = (500, 200)`, and `GRID_SHOULDER_WIDTH = 250`.
+- [x] 5.3 Write `body_map/alignment.py`:
   - `compute_alignment(nose, shoulder_a, shoulder_b) -> Alignment(scale, rotation_deg, tx, ty)`. Order the shoulders by image x, so naming doesn't matter. The rotation makes the shoulder vector horizontal, the scale is `GRID_SHOULDER_WIDTH / distance`, and the translation puts the nose at `GRID_NOSE_BRIDGE`.
   - `to_grid(x, y)` and `to_px(x, y)`.
   - `transform_geometry(geom, alignment, direction)`.
   - `render_aligned(cutout_image, alignment) -> RGBA image`, using `cv2.warpAffine` onto the grid canvas.
-- [ ] 5.4 Write `body_map/landmarks.py` with `detect(image) -> dict[name, (x, y)]`, implemented **only** for the framework that won 3.0, using standard names (`nose_bridge`, `left_eye`, `right_eye`, `left_shoulder`, `right_shoulder`, plus `left_elbow` … `right_ankle` when available).
-  - **If Apple Vision won:** `VNDetectHumanBodyPoseRequest` for body points, and `VNDetectFaceLandmarksRequest` for the eyes. The nose bridge is the top point of the nose crest, or else the midpoint of the eye centers.
-  - **If MediaPipe won:** the pose landmarker for body points, and the face landmarker for the nasion (point 168).
+- [x] 5.4 Write `body_map/landmarks.py` with `detect(image) -> dict[name, (x, y)]`, using **MediaPipe** (decided 2026-10-25 for cross-platform reasons; see the decision record):
+  - The pose landmarker (heavy) gives 33 body points, named as MediaPipe names them (`left_shoulder`, `right_knee`, …; left and right are the subject's own). Points with visibility under 0.5 are dropped.
+  - The face landmarker gives the nasion, point 168, as `nose_bridge`.
 
-  Only if the winner's detector fails the fixture test, switch to the other framework's detector instead.
-- [ ] 5.5 Extend `pipeline.import_portrait`. After the outline, detect key points and save the `Keypoint` rows with `point_px`.
+- [x] 5.5 Extend `pipeline.import_portrait`. After the outline, detect key points and save the `Keypoint` rows with `point_px`.
   - If the nose bridge and both shoulders are present: compute the alignment, fill `point_grid` and `outline_grid`, save `aligned.png`, and set the status to aligned.
   - Otherwise: set `not_aligned` with a reason naming what's missing ("face not found", "shoulders not found").
 
   Never reject the import at this stage.
-- [ ] 5.6 Add a `fake_landmarks` fixture that monkeypatches `landmarks.detect`. Write `tests/test_alignment.py`, `tests/test_landmarks_pipeline.py`, and the real-detector fixture test.
-- [ ] 5.7 Re-import a fixture, capture the `psql` output, and write `02-proofs/02-task-05-proofs.md`.
+- [x] 5.6 Add a `fake_landmarks` fixture that monkeypatches `landmarks.detect`. Write `tests/test_alignment.py`, `tests/test_landmarks_pipeline.py`, and the real-detector fixture test.
+- [x] 5.7 Re-import a fixture, capture the `psql` output, and write `02-proofs/02-task-05-proofs.md`.
 
 ### [ ] 6.0 Portrait view and all-subjects overlay
 

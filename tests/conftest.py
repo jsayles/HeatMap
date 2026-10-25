@@ -39,3 +39,20 @@ def fake_segment(monkeypatch):
         return red.astype(np.float32)
 
     monkeypatch.setattr(segmentation, 'segment', segment)
+
+
+@pytest.fixture
+def fake_landmarks(monkeypatch):
+    """Replace key-point detection with a fixed set of points (edit `.points` in a test)."""
+    from body_map import landmarks
+
+    class Fake:
+        def __init__(self):
+            self.points = {}
+
+        def detect(self, image):
+            return dict(self.points)
+
+    fake = Fake()
+    monkeypatch.setattr(landmarks, 'detect', fake.detect)
+    return fake

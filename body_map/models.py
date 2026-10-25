@@ -85,6 +85,17 @@ class Portrait(models.Model):
     outline_px = models.PolygonField(srid=IMAGE_SRID, null=True, blank=True)
     segmentation_method = models.CharField(max_length=40, blank=True)
 
+    # Alignment to the standard grid: grid = scale * rotate(rotation_deg) * px + (tx, ty).
+    ALIGNMENT_CHOICES = (('aligned', 'Aligned'), ('not_aligned', 'Not aligned'))
+    alignment_status = models.CharField(max_length=20, choices=ALIGNMENT_CHOICES, blank=True)
+    alignment_reason = models.CharField(max_length=200, blank=True)
+    align_scale = models.FloatField(null=True, blank=True)
+    align_rotation_deg = models.FloatField(null=True, blank=True)
+    align_tx = models.FloatField(null=True, blank=True)
+    align_ty = models.FloatField(null=True, blank=True)
+    outline_grid = models.PolygonField(srid=IMAGE_SRID, null=True, blank=True)
+    aligned = models.ImageField(upload_to=portrait_path, blank=True)
+
     # What the photo shows. "genitals" is labeled "Sex" in the app.
     chest = models.CharField(max_length=20, choices=COVERAGE_CHOICES)
     genitals = models.CharField('sex', max_length=20, choices=COVERAGE_CHOICES)
@@ -106,3 +117,21 @@ class Portrait(models.Model):
         if 'covered' in values:
             return 'partly clothed'
         return 'nude'
+
+
+class Keypoint(models.Model):
+    """A named body point found on a portrait, e.g. nose_bridge or left_shoulder."""
+
+    portrait = models.ForeignKey(Portrait, on_delete=models.CASCADE, related_name='keypoints')
+    name = models.CharField(max_length=40)
+    point_px = models.PointField(srid=IMAGE_SRID)
+    point_grid = models.PointField(srid=IMAGE_SRID, null=True, blank=True)
+
+    class Meta:
+        ordering = ('name',)
+        constraints = (
+            models.UniqueConstraint(fields=('portrait', 'name'), name='one_keypoint_per_name'),
+        )
+
+    def __str__(self):
+        return self.name
