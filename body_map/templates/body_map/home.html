@@ -11,7 +11,7 @@
       <td>{{ subject }}</td>
       <td>
         {% for portrait in subject.portraits.all %}
-          {{ portrait.get_view_display }}: {{ portrait.level }}
+          <a href="{% url 'portrait_detail' portrait.pk %}">{{ portrait.get_view_display }}</a>: {{ portrait.level }}{% if portrait.alignment_status == 'not_aligned' %} · <span class="warning">not aligned</span>{% endif %}
         {% empty %}
           <a href="{% url 'import_portrait' %}?subject={{ subject.pk }}">Import portrait</a>
         {% endfor %}

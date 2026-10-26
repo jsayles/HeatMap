@@ -30,8 +30,19 @@ def trace_outline(mask):
     polygon = Polygon(ring, srid=IMAGE_SRID)
 
     if not polygon.valid:
-        fixed = polygon.make_valid()
-        parts = [g for g in fixed if g.geom_type == 'Polygon'] if fixed.num_geom > 1 else [fixed]
+        # A self-touching outline repairs into a (possibly nested) collection; keep the
+        # largest polygon in it.
+        parts = _polygons(polygon.make_valid())
+        if not parts:
+            raise NoUsableOutline('The outline of the person could not be traced.')
         polygon = max(parts, key=lambda g: g.area)
         polygon.srid = IMAGE_SRID
     return polygon
+
+
+def _polygons(geometry):
+    if geometry.geom_type == 'Polygon':
+        return [geometry]
+    if geometry.geom_type in ('MultiPolygon', 'GeometryCollection'):
+        return [p for part in geometry for p in _polygons(part)]
+    return []

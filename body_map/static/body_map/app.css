@@ -37,7 +37,6 @@ a {
 
 main {
   padding: 1.5rem 2rem;
-  max-width: 60rem;
 }
 
 table {
@@ -89,4 +88,87 @@ fieldset {
 button {
   padding: 0.5rem 1.5rem;
   font-size: 1rem;
+}
+
+.panels {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.panel {
+  margin: 0;
+  flex: 1 1 0;
+  max-width: 34rem;
+}
+
+figcaption {
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+.map {
+  width: 100%;
+  height: auto;
+  max-height: 75vh;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.map.overlay {
+  max-width: 30rem;
+}
+
+.grid-border {
+  fill: #f2f0ec;
+}
+
+.outline {
+  fill: none;
+  stroke: #1aa34a;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.outline.faint {
+  stroke: var(--accent);
+  stroke-opacity: 0.45;
+}
+
+.point {
+  fill: #ffcc00;
+  stroke: #333;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.mark {
+  stroke: #d0312d;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.mark.shoulder {
+  stroke: #3a62d6;
+  stroke-dasharray: 6 6;
+  stroke-width: 1;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content auto;
+  gap: 0.3rem 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  margin: 0;
+}
+
+.warning {
+  color: #b00020;
 }

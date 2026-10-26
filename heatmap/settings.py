@@ -155,8 +155,9 @@ SEGMENTATION_METHOD = 'vision_person'
 MIN_BODY_AREA_FRACTION = 0.02
 
 # The standard grid every aligned portrait is mapped onto (grid units, y down).
-# The nose bridge lands on GRID_NOSE_BRIDGE; shoulder width sets the scale.
-GRID_SIZE = (1000, 2000)
+# The nose bridge lands on GRID_NOSE_BRIDGE; shoulder width sets the scale; no rotation.
+# Sized from the 10 fixtures: aligned bodies span y ~20-1530 at this scale.
+GRID_SIZE = (1000, 1600)
 GRID_NOSE_BRIDGE = (500, 200)
 GRID_SHOULDER_WIDTH = 250
 

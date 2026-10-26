@@ -42,11 +42,19 @@ def test_nose_bridge_lands_on_the_grid_point(nose, sa, sb):
 
 
 @pytest.mark.parametrize(('nose', 'sa', 'sb'), CASES)
-def test_shoulder_width_and_level(nose, sa, sb):
+def test_shoulder_width_sets_the_scale(nose, sa, sb):
     alignment = compute_alignment(nose, sa, sb)
     (ax, ay), (bx, by) = alignment.to_grid(*sa), alignment.to_grid(*sb)
     assert math.hypot(bx - ax, by - ay) == pytest.approx(250, rel=0.005)
-    assert abs(math.degrees(math.atan2(by - ay, bx - ax))) < 0.5
+
+
+@pytest.mark.parametrize(('nose', 'sa', 'sb'), CASES)
+def test_photo_is_not_rotated(nose, sa, sb):
+    # Bodies stay upright as photographed: a vertical line in the photo stays vertical.
+    alignment = compute_alignment(nose, sa, sb)
+    assert alignment.rotation_deg == 0
+    (x1, _), (x2, _) = alignment.to_grid(100, 0), alignment.to_grid(100, 900)
+    assert x1 == pytest.approx(x2)
 
 
 @pytest.mark.parametrize(('nose', 'sa', 'sb'), CASES)

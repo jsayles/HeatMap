@@ -48,3 +48,14 @@ def test_tiny_body_is_rejected():
     mask[500:520, 500:520] = 1.0  # 0.04% of the photo
     with pytest.raises(NoUsableOutline, match='too small'):
         trace_outline(mask)
+
+
+def test_self_touching_outline_is_repaired_to_its_largest_part():
+    # Two blobs joined at a single pixel trace as one figure-8 contour, which is invalid.
+    mask = np.zeros((400, 400), dtype=np.float32)
+    mask[50:200, 50:200] = 1.0
+    mask[200:350, 200:330] = 1.0
+    outline = trace_outline(mask)
+    assert outline.valid
+    assert outline.geom_type == 'Polygon'
+    assert outline.area == pytest.approx(149 * 149, rel=0.05)

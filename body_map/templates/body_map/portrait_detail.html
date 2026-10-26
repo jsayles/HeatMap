@@ -1,0 +1,51 @@
+{% extends 'body_map/base.html' %}
+
+{% block title %}{{ portrait.subject }} · Personal Heat Map{% endblock %}
+
+{% block content %}
+<h1>{{ portrait.subject }}</h1>
+
+<div class="panels">
+  <figure class="panel">
+    <figcaption>Photo, outline and key points</figcaption>
+    {% with w=portrait.original.width h=portrait.original.height %}
+    <svg viewBox="0 0 {{ w }} {{ h }}" class="map">
+      <image href="{{ portrait.original.url }}" width="{{ w }}" height="{{ h }}"/>
+      {% if outline_px %}<path class="outline" d="{{ outline_px }}"/>{% endif %}
+      {% for point in points_px %}
+        <circle class="point" cx="{{ point.x }}" cy="{{ point.y }}" r="{% widthratio w 120 1 %}"><title>{{ point.name }}</title></circle>
+      {% endfor %}
+    </svg>
+    {% endwith %}
+  </figure>
+
+  {% if portrait.alignment_status == 'aligned' %}
+  <figure class="panel">
+    <figcaption>Aligned to the standard grid</figcaption>
+    <svg viewBox="0 0 {{ grid.width }} {{ grid.height }}" class="map grid">
+      <rect class="grid-border" width="{{ grid.width }}" height="{{ grid.height }}"/>
+      <image href="{{ portrait.aligned.url }}" width="{{ grid.width }}" height="{{ grid.height }}"/>
+      <path class="outline" d="{{ outline_grid }}"/>
+      <line class="mark" x1="{{ grid.nose_x }}" y1="{{ grid.nose_y|add:-25 }}" x2="{{ grid.nose_x }}" y2="{{ grid.nose_y|add:25 }}"/>
+      <line class="mark" x1="{{ grid.nose_x|add:-25 }}" y1="{{ grid.nose_y }}" x2="{{ grid.nose_x|add:25 }}" y2="{{ grid.nose_y }}"/>
+      <line class="mark shoulder" x1="{{ grid.shoulder_left }}" y1="0" x2="{{ grid.shoulder_left }}" y2="{{ grid.height }}"/>
+      <line class="mark shoulder" x1="{{ grid.shoulder_right }}" y1="0" x2="{{ grid.shoulder_right }}" y2="{{ grid.height }}"/>
+    </svg>
+  </figure>
+  {% endif %}
+</div>
+
+<dl class="facts">
+  {% for label, value in coverage %}
+    <dt>{{ label }}</dt><dd>{{ value }}</dd>
+  {% endfor %}
+  <dt>Overall</dt><dd>{{ portrait.level }}</dd>
+  <dt>Background removal</dt><dd>{{ portrait.segmentation_method|default:'—' }}</dd>
+  <dt>Alignment</dt>
+  <dd>
+    {% if portrait.alignment_status == 'aligned' %}Aligned
+    {% elif portrait.alignment_status == 'not_aligned' %}<span class="warning">Not aligned: {{ portrait.alignment_reason }}</span>
+    {% else %}Not processed (imported before outlines and alignment existed){% endif %}
+  </dd>
+</dl>
+{% endblock %}

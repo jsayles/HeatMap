@@ -52,7 +52,7 @@ Spec: [02-spec-portrait-mapping.md](02-spec-portrait-mapping.md)
 - **Public repo:** `jsayles/HeatMap` is public. Openly licensed fixtures (nude, partially clothed or clothed) may be committed, with credits in `ATTRIBUTION.md` (Jacob's decision, 2026-10-25). Private subjects' images never are.
 - **Screenshots:** the agent's terminal lacks macOS Screen Recording permission, so Jacob takes the in-app screenshots and saves them to the named proof paths.
 - **Assumptions for the spec's Open Questions:**
-  1. The grid defaults are 1000 × 2000, nose bridge at (500, 200), shoulder width 250. They're settings: `GRID_SIZE`, `GRID_NOSE_BRIDGE`, `GRID_SHOULDER_WIDTH`.
+  1. The grid defaults are 1000 × 1600 (changed from 2000), nose bridge at (500, 200), shoulder width 250. They're settings: `GRID_SIZE`, `GRID_NOSE_BRIDGE`, `GRID_SHOULDER_WIDTH`.
   2. Every key point the detector provides is stored.
   3. Backups: left as is for now; listed in the README as a decision to make before importing real subjects' photos.
   4. Fixtures: the openly licensed images being gathered now, with synthetic images for the pure-logic tests.
@@ -226,7 +226,7 @@ Detect the nose bridge, eyes, shoulders and the other available body points, and
 - Test: `uv run pytest tests/test_alignment.py` passes on synthetic key points (including a tilted, scaled, shifted body, and a mirrored left/right naming). After alignment:
   - The nose bridge is within 0.5 units of the fixed grid point.
   - The shoulder width is within 0.5% of the fixed width.
-  - The shoulder line is within 0.5° of horizontal.
+  - No rotation is applied (changed 2026-10-25; see the spec).
   - Converting grid → original → grid returns the starting points within 0.5 units.
   - Upper-body-only points align.
 
@@ -248,7 +248,7 @@ Detect the nose bridge, eyes, shoulders and the other available body points, and
   - `alignment_status` (choices `aligned` / `not_aligned`) and `alignment_reason` (blank).
 
   Add `Keypoint(portrait FK, name, point_px PointField(srid=IMAGE_SRID), point_grid PointField(srid=IMAGE_SRID, null=True))` with `unique (portrait, name)`.
-- [x] 5.2 Add the grid settings `GRID_SIZE = (1000, 2000)`, `GRID_NOSE_BRIDGE = (500, 200)`, and `GRID_SHOULDER_WIDTH = 250`.
+- [x] 5.2 Add the grid settings `GRID_SIZE = (1000, 1600)`, `GRID_NOSE_BRIDGE = (500, 200)`, and `GRID_SHOULDER_WIDTH = 250`.
 - [x] 5.3 Write `body_map/alignment.py`:
   - `compute_alignment(nose, shoulder_a, shoulder_b) -> Alignment(scale, rotation_deg, tx, ty)`. Order the shoulders by image x, so naming doesn't matter. The rotation makes the shoulder vector horizontal, the scale is `GRID_SHOULDER_WIDTH / distance`, and the translation puts the nose at `GRID_NOSE_BRIDGE`.
   - `to_grid(x, y)` and `to_px(x, y)`.
@@ -266,7 +266,7 @@ Detect the nose bridge, eyes, shoulders and the other available body points, and
 - [x] 5.6 Add a `fake_landmarks` fixture that monkeypatches `landmarks.detect`. Write `tests/test_alignment.py`, `tests/test_landmarks_pipeline.py`, and the real-detector fixture test.
 - [x] 5.7 Re-import a fixture, capture the `psql` output, and write `02-proofs/02-task-05-proofs.md`.
 
-### [ ] 6.0 Portrait view and all-subjects overlay
+### [x] 6.0 Portrait view and all-subjects overlay
 
 A portrait view shows the photo with its outline and key points, the aligned cutout on the grid with the nose-bridge and shoulder-width marks, and the coverage, overall level and alignment status. An overlay view draws every aligned outline on the grid, outlines only, with no photos. A spatial query check proves cross-subject questions work. (Spec Unit 3: views, spatial query.)
 
@@ -284,12 +284,12 @@ A portrait view shows the photo with its outline and key points, the aligned cut
 
 #### 6.0 Tasks
 
-- [ ] 6.1 Write `body_map/svg.py`: functions that turn a `Polygon` or a set of `Keypoint`s into SVG path and circle elements, in pixel or grid coordinates, for use in templates. No front-end library is needed.
-- [ ] 6.2 Write the `portrait_detail` view and template:
+- [x] 6.1 Write `body_map/svg.py`: functions that turn a `Polygon` or a set of `Keypoint`s into SVG path and circle elements, in pixel or grid coordinates, for use in templates. No front-end library is needed.
+- [x] 6.2 Write the `portrait_detail` view and template:
   - **Left:** the original with an SVG overlay (outline and key points, with names on hover).
   - **Right:** `aligned.png` with an SVG overlay showing the grid border, a cross at `GRID_NOSE_BRIDGE`, and two ticks marking `GRID_SHOULDER_WIDTH`.
   - **Underneath:** coverage ("Chest", "Sex", "Buttocks"), the overall level, the segmentation method, and the alignment status or reason.
-- [ ] 6.3 Write the `overlay` view and template: one SVG at grid size, with every aligned portrait's `outline_grid` as a thin, semi-transparent path, a count, and the nose-bridge cross. No `<img>`.
-- [ ] 6.4 Link the portrait and overlay views from the home screen; the import redirects to the new portrait's view. Add `app.css` (calm, plain, panels side by side).
-- [ ] 6.5 Write `tests/test_views.py`.
-- [ ] 6.6 Import all the openly licensed fixtures. Run the `ST_Contains` query, and have Jacob capture both screenshots. Write `02-proofs/02-task-06-proofs.md`.
+- [x] 6.3 Write the `overlay` view and template: one SVG at grid size, with every aligned portrait's `outline_grid` as a thin, semi-transparent path, a count, and the nose-bridge cross. No `<img>`.
+- [x] 6.4 Link the portrait and overlay views from the home screen; the import redirects to the new portrait's view. Add `app.css` (calm, plain, panels side by side).
+- [x] 6.5 Write `tests/test_views.py`.
+- [x] 6.6 Import all the openly licensed fixtures. Run the `ST_Contains` query, and have Jacob capture both screenshots. Write `02-proofs/02-task-06-proofs.md`.

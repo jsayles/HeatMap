@@ -1,0 +1,14 @@
+{% extends 'body_map/base.html' %}
+
+{% block title %}Overlay · Personal Heat Map{% endblock %}
+
+{% block content %}
+<h1>All aligned outlines</h1>
+<p class="hint">{{ outlines|length }} aligned portrait{{ outlines|length|pluralize }}, outlines only. The cross marks the nose bridge.</p>
+<svg viewBox="0 0 {{ grid.width }} {{ grid.height }}" class="map grid overlay">
+  <rect class="grid-border" width="{{ grid.width }}" height="{{ grid.height }}"/>
+  {% for d in outlines %}<path class="outline faint" d="{{ d }}"/>{% endfor %}
+  <line class="mark" x1="{{ grid.nose_x }}" y1="{{ grid.nose_y|add:-25 }}" x2="{{ grid.nose_x }}" y2="{{ grid.nose_y|add:25 }}"/>
+  <line class="mark" x1="{{ grid.nose_x|add:-25 }}" y1="{{ grid.nose_y }}" x2="{{ grid.nose_x|add:25 }}" y2="{{ grid.nose_y }}"/>
+</svg>
+{% endblock %}

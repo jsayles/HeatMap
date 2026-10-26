@@ -52,13 +52,6 @@ def import_portrait(subject, photo, coverage):
     cutout = image.copy()
     cutout.putalpha(alpha)
 
-    reason = missing_for_alignment(points)
-    alignment = None
-    if not reason:
-        alignment = compute_alignment(
-            points['nose_bridge'], points['left_shoulder'], points['right_shoulder']
-        )
-
     portrait = None
     try:
         with transaction.atomic():
@@ -68,27 +61,12 @@ def import_portrait(subject, photo, coverage):
             portrait.cutout.save('cutout.png', ContentFile(png_bytes(cutout)), save=False)
             portrait.outline_px = outline
             portrait.segmentation_method = settings.SEGMENTATION_METHOD
-
-            keypoints = [
+            portrait.save()
+            Keypoint.objects.bulk_create(
                 Keypoint(portrait=portrait, name=name, point_px=Point(x, y, srid=IMAGE_SRID))
                 for name, (x, y) in points.items()
-            ]
-            if alignment:
-                portrait.alignment_status = 'aligned'
-                portrait.align_scale = alignment.scale
-                portrait.align_rotation_deg = alignment.rotation_deg
-                portrait.align_tx, portrait.align_ty = alignment.tx, alignment.ty
-                portrait.outline_grid = polygon_to_grid(outline, alignment)
-                aligned = Image.fromarray(render_aligned(cutout, alignment))
-                portrait.aligned.save('aligned.png', ContentFile(png_bytes(aligned)), save=False)
-                for keypoint in keypoints:
-                    keypoint.point_grid = point_to_grid(keypoint.point_px, alignment)
-            else:
-                portrait.alignment_status = 'not_aligned'
-                portrait.alignment_reason = reason
-
-            portrait.save()
-            Keypoint.objects.bulk_create(keypoints)
+            )
+            align_portrait(portrait)
     except Exception:
         if portrait is not None and portrait.pk:
             shutil.rmtree(
@@ -96,3 +74,36 @@ def import_portrait(subject, photo, coverage):
             )
         raise
     return portrait
+
+
+def align_portrait(portrait):
+    """(Re)compute the portrait's grid geometry from its stored outline and key points."""
+    keypoints = list(portrait.keypoints.all())
+    points = {k.name: (k.point_px.x, k.point_px.y) for k in keypoints}
+    if portrait.aligned:
+        portrait.aligned.delete(save=False)
+
+    reason = missing_for_alignment(points)
+    if reason:
+        portrait.alignment_status, portrait.alignment_reason = 'not_aligned', reason
+        portrait.align_scale = portrait.align_rotation_deg = None
+        portrait.align_tx = portrait.align_ty = portrait.outline_grid = None
+        for keypoint in keypoints:
+            keypoint.point_grid = None
+    else:
+        alignment = compute_alignment(
+            points['nose_bridge'], points['left_shoulder'], points['right_shoulder']
+        )
+        portrait.alignment_status, portrait.alignment_reason = 'aligned', ''
+        portrait.align_scale = alignment.scale
+        portrait.align_rotation_deg = alignment.rotation_deg
+        portrait.align_tx, portrait.align_ty = alignment.tx, alignment.ty
+        portrait.outline_grid = polygon_to_grid(portrait.outline_px, alignment)
+        with Image.open(portrait.cutout.path) as cutout:
+            aligned = Image.fromarray(render_aligned(cutout, alignment))
+        portrait.aligned.save('aligned.png', ContentFile(png_bytes(aligned)), save=False)
+        for keypoint in keypoints:
+            keypoint.point_grid = point_to_grid(keypoint.point_px, alignment)
+
+    Keypoint.objects.bulk_update(keypoints, ['point_grid'])
+    portrait.save()

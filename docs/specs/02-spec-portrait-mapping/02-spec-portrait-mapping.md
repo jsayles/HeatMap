@@ -93,10 +93,10 @@ The goal is a trustworthy, spatially queryable store of subject portraits. It is
 
 - The system shall detect key points on each portrait: the nose bridge (between the eyes), the left and right eye, and the left and right shoulder, plus any other body points the detector provides (for example elbows, hips, knees, ankles).
 - The system shall store each key point in PostGIS as a named point, in both original-photo and grid coordinates.
-- The system shall compute an alignment (shift, uniform scale, rotation) that puts:
+- The system shall compute an alignment (shift and uniform scale) that puts:
   - The nose bridge at a fixed grid point.
   - The two shoulders a fixed distance apart (shoulder width sets the scale).
-  - The shoulder line horizontal (sets the rotation).
+  - **No rotation:** the photo stays upright as taken. Changed 2026-10-25: leveling the shoulder line tilted bodies whose shoulders sit naturally uneven, and Jacob preferred the upright look.
 - The system shall store the alignment numbers on the portrait, so either coordinate version can be recomputed from the other.
 - The system shall store the outline polygon in grid coordinates as well, and save an aligned image (the cutout placed on the grid) in the portrait's folder.
 - The system shall handle upper-body-only photos the same way, since alignment needs only the nose bridge and shoulders.
@@ -113,7 +113,7 @@ The goal is a trustworthy, spatially queryable store of subject portraits. It is
 - Test: alignment math tests pass on synthetic key points:
   - After alignment, the nose bridge is within 0.5 grid units of the fixed point.
   - The shoulder distance is within 0.5% of the fixed width.
-  - The shoulder line is within 0.5° of horizontal.
+  - The photo is not rotated.
   - Converting grid → original → grid returns the starting points within 0.5 units.
 
   Demonstrates correct alignment and that the stored numbers are reversible.
@@ -167,7 +167,7 @@ All choices below are the **current direction** and open to change.
   - Use plain, non-geographic coordinates, labeled with `IMAGE_SRID = 3857` and never transformed (GeoDjango cannot store SRID 0; see `body_map/models.py`): units are pixels for original-photo geometry and grid units for aligned geometry. Keep them in separate fields per portrait, so the two are never mixed in a query.
   - The y axis runs downward, matching images.
 - **Standard grid (default, adjustable):**
-  - A 1000 × 2000 unit canvas.
+  - A 1000 × 1600 unit canvas. Changed from 1000 × 2000 on 2026-10-25: at this scale the 10 fixtures span y ≈ 20–1530, so 2000 left the bottom third empty.
   - The nose bridge fixed at (500, 200).
   - A shoulder width of 250 units.
   - These numbers are named settings, so they can be tuned once real portraits are in.
@@ -207,15 +207,20 @@ All choices below are the **current direction** and open to change.
 ## Success Metrics
 
 1. **Boundary quality chosen on evidence:** the comparison has been run on at least 5 real portraits (yours and consenting subjects'), and the decision record is committed.
-2. **Alignment precision:** in tests, after alignment the nose bridge is within 0.5 grid units of the fixed point, the shoulder width within 0.5%, and the shoulder line within 0.5° of horizontal.
+2. **Alignment precision:** in tests, after alignment the nose bridge is within 0.5 grid units of the fixed point, the shoulder width within 0.5%, and no rotation is applied.
 3. **Safe import:** 100% of stored photos have no GPS data, checked by an automated test.
 4. **No lost portraits:** every photo with a usable outline is stored (aligned or flagged "not aligned" with a reason); only photos with no usable outline are rejected.
 5. **Practical speed:** importing one phone photo (removal, tracing, landmarks, alignment) takes under 30 seconds on this laptop.
 
 ## Open Questions
 
-1. **Grid numbers:** the defaults (1000 × 2000 canvas, nose bridge at (500, 200), shoulder width 250) are placeholders, to be tuned after the first real portraits.
+1. **Grid numbers:** the defaults (1000 × 1600 canvas, nose bridge at (500, 200), shoulder width 250) are placeholders, to be tuned after the first real portraits.
 2. **Which key points to store:** store everything the chosen detector provides (recommended), or only the nose bridge, eyes and shoulders?
 3. **Backups:** should `recordings/` and the Postgres data be excluded from Time Machine or cloud sync before real subjects' photos are imported?
 4. **Openly licensed test photos:** if no suitable full-body, anatomical-pose photo can be found, automated tests will use synthetic images (simple drawn shapes) plus your private photos for manual checks.
 5. **Points the detectors don't find (Jacob, 2026-10-25):** the heat map will need nipples and sex (and likely the navel), and neither MediaPipe nor Apple Vision provides them; both detect posture joints only. A later spec (body areas / scrubbing) must add them, either by hand placement or by estimation from the detected joints. `Keypoint` stores points by name, so adding `left_nipple`, `right_nipple`, `navel` and `genitals` needs no schema change.
+6. **How to get those points and body areas (discussed 2026-10-25, for later specs):**
+   - **Points:** estimate nipples, navel and sex from the detected joints, then drag them into place on the portrait (option 5). Detectors were ruled out for now. NudeNet gives boxes, not points, needs onnxruntime (not on Python 3.15), and misses covered areas. Training our own isn't worth it at this scale.
+   - **Areas (neck, breasts, chest, belly, sex, forearms…):** no library splits the torso this way (SCHP, DensePose, Sapiens and MediaPipe are all clothing- or posture-oriented). The plan is to draw one body-area template on the standard grid, fit it to each body using its key points (a piecewise-affine or thin-plate-spline warp in OpenCV), clip it to the outline in PostGIS, and allow hand correction.
+   - **Possible order:** point editing (plus fixing not-aligned portraits), then body areas, then the cursor-and-zoom session. The session doesn't strictly need areas, since every reading has an x/y location.
+

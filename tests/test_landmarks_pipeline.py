@@ -87,3 +87,32 @@ def test_mediapipe_finds_nose_bridge_and_shoulders_on_fixtures(photo):
         mid = [(a + b) / 2 for a, b in zip(points['left_eye'], points['right_eye'])]
         eye_gap = math.dist(points['left_eye'], points['right_eye'])
         assert math.dist(points['nose_bridge'], mid) < eye_gap
+
+
+@pytest.mark.usefixtures('fake_segment')
+def test_realign_applies_new_grid_settings(subject, fake_landmarks, settings):
+    from django.core.management import call_command
+
+    fake_landmarks.points = POINTS
+    portrait = run_import(subject)
+
+    settings.GRID_NOSE_BRIDGE = (400, 300)
+    call_command('realign_portraits')
+    bridge = portrait.keypoints.get(name='nose_bridge')
+    assert math.hypot(bridge.point_grid.x - 400, bridge.point_grid.y - 300) < 0.5
+    assert len(list(Path(portrait.aligned.path).parent.glob('aligned*.png'))) == 1
+
+
+@pytest.mark.usefixtures('fake_segment')
+def test_realign_flags_portrait_when_points_are_gone(subject, fake_landmarks):
+    from django.core.management import call_command
+
+    fake_landmarks.points = POINTS
+    portrait = run_import(subject)
+    portrait.keypoints.filter(name='nose_bridge').delete()
+
+    call_command('realign_portraits')
+    portrait.refresh_from_db()
+    assert portrait.alignment_status == 'not_aligned'
+    assert portrait.alignment_reason == 'face not found'
+    assert portrait.outline_grid is None and not portrait.aligned

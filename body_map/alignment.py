@@ -4,8 +4,9 @@ The transform is a similarity (uniform scale, rotation, shift), with y pointing 
 
     grid = scale * R(rotation) * px + (tx, ty)
 
-It puts the nose bridge on GRID_NOSE_BRIDGE, makes the shoulder line horizontal and
-sets the shoulder distance to GRID_SHOULDER_WIDTH.
+It puts the nose bridge on GRID_NOSE_BRIDGE and sets the shoulder distance to
+GRID_SHOULDER_WIDTH. The photo is not rotated: it stays upright as taken, because
+leveling the shoulders tilted bodies whose shoulders sit naturally uneven.
 """
 
 import math
@@ -43,20 +44,14 @@ class Alignment:
 
 
 def compute_alignment(nose, shoulder_a, shoulder_b):
-    # Order shoulders by image x, so it doesn't matter which is called left or right.
-    (ax, ay), (bx, by) = sorted([shoulder_a, shoulder_b])
-    distance = math.hypot(bx - ax, by - ay)
+    distance = math.dist(shoulder_a, shoulder_b)
     if distance == 0:
         raise ValueError('Shoulders are at the same point.')
 
     scale = settings.GRID_SHOULDER_WIDTH / distance
-    rotation = -math.atan2(by - ay, bx - ax)  # turn the shoulder line horizontal
-    c, s = math.cos(rotation) * scale, math.sin(rotation) * scale
     gx, gy = settings.GRID_NOSE_BRIDGE
     nx, ny = nose
-    tx = gx - (c * nx - s * ny)
-    ty = gy - (s * nx + c * ny)
-    return Alignment(scale, math.degrees(rotation), tx, ty)
+    return Alignment(scale, 0.0, gx - scale * nx, gy - scale * ny)
 
 
 def point_to_grid(point, alignment):

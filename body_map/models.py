@@ -109,6 +109,9 @@ class Portrait(models.Model):
     def __str__(self):
         return f'{self.subject} ({self.view})'
 
+    def get_coverage(self, area):
+        return dict(self.COVERAGE_CHOICES).get(getattr(self, area), '')
+
     @property
     def level(self):
         values = [getattr(self, area) for area in self.COVERAGE_AREAS]
